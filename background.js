@@ -1,8 +1,19 @@
-function isNotHTTPS(url) {
-  return url.startsWith("http://");
-}
-
 const warningPage = chrome.runtime.getURL("warning.html");
+
+const phishingSigns = new Set([
+]);
+
+
+function isNotHTTPS(url) {
+
+  if(url.startsWith("http://")) {
+
+    phishingSigns.add("NOT_HTTPS");
+    return true;
+  }
+
+  return false;
+}
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
@@ -20,11 +31,14 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     phishing = true;
   }
 
+  console.log("Current phishing signs:", Array.from(phishingSigns));
+
   console.log("Checking changeinfo URL:", changeInfo.url);
 
   // If phishing is detected, redirect to the warning page
   if (phishing) {
     chrome.tabs.update(tabId, { url: warningPage });
+    console.log("Current phishing signs:", Array.from(phishingSigns));
 }
 
 }); 
