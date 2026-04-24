@@ -5,6 +5,12 @@
   "description": "Detects phishing signs in URLs",
   "permissions": ["tabs", "scripting"],
   "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
   "background": {
     "service_worker": "background.js"
   },
