@@ -36,6 +36,23 @@ function hasIPAddress(url) {
     return false;
 }
 
+function urlLength(url) {
+  return url.length > 30;
+}
+
+function multipleSubDomains(url) {
+
+  // -2 because we don't count the top level domain and the main domain
+  let subdomains = url.split(".").length - 2;
+
+  if (subdomains > 2) {
+    return true;
+  }
+
+  return false;
+
+}
+
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
   // Will change to true if any phishing is detected 
@@ -60,6 +77,18 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   // Checks if the URL uses an IP address instead of a domain name, which is a common sign of phishing
   if (hasIPAddress(url.host)) {
     phishingSigns.add("IP_ADDRESS");
+    phishing = true;
+  }
+
+  // Checks if the URL is excessively long, which can be a sign of phishing
+  if (urlLength(url.href)) {
+    phishingSigns.add("LONG_URL");
+    phishing = true;
+  }
+
+  // Checks if the URL has multiple subdomains, which can be a sign of phishing
+  if (multipleSubDomains(url.host)) {
+    phishingSigns.add("MULTIPLE_SUBDOMAINS");
     phishing = true;
   }
 
