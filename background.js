@@ -37,7 +37,7 @@ function hasIPAddress(url) {
 }
 
 function urlLength(url) {
-  return url.length > 30;
+  return url.length > 52;
 }
 
 function multipleSubDomains(url) {
@@ -50,6 +50,24 @@ function multipleSubDomains(url) {
   }
 
   return false;
+
+}
+
+function letterNumberSubstitution(url) {
+
+    // Remove dots (so subdomains don't interfere)
+    const compactURL = url.split(".");
+
+    for (let i = 0; i < compactURL.length; i++) {
+      if (!/[a-z]/.test(compactURL[i]) || !/\d/.test(compactURL[i])) {
+        continue;
+      }
+      else if (/[a-z]+\d+[a-z]+/.test(compactURL[i])) {
+        return true;
+      }
+    }
+
+    return false;
 
 }
 
@@ -89,6 +107,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   // Checks if the URL has multiple subdomains, which can be a sign of phishing
   if (multipleSubDomains(url.host)) {
     phishingSigns.add("MULTIPLE_SUBDOMAINS");
+    phishing = true;
+  }
+
+  // Checks for some common letter-number substitutions, which can be a sign of phishing
+  if (letterNumberSubstitution(url.host)) {
+    phishingSigns.add("LETTER_SUBSTITUTION_WITH_NUMBERS");
     phishing = true;
   }
 
