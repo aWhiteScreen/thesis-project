@@ -1,0 +1,44 @@
+#url {
+  font-size: 28px;
+  font-weight: bold;
+  font-family: monospace;
+  word-break: break-all;
+}
+
+mark {
+  background-color: red;
+}
+
+.tooltip-highlight {
+  position: relative;
+  background-color: red;
+  cursor: help;
+}
+
+.tooltip-text {
+  display: none;
+  position: absolute;
+  bottom: 125%;
+  left: 0;
+
+  background-color: white;
+  color: black;
+  border: 1px solid black;
+  padding: 6px;
+  width: 260px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  z-index: 10;
+}
+
+.tooltip-highlight:hover .tooltip-text {
+  display: block;
+}
+
+#backButton {
+    background-color: green;
+    color: white;
+    width: 200px;
+    height: 70px;
+    font-size: 28px;
+}

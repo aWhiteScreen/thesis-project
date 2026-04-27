@@ -1,4 +1,4 @@
-const warningPage = chrome.runtime.getURL("warning.html");
+const warningPage = chrome.runtime.getURL("warningPage.html");
 
 //const phishingSigns = new Set([
 //]);
@@ -122,8 +122,14 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
   // If phishing is detected, redirect to the warning page
   if (phishing) {
-    chrome.tabs.update(tabId, { url: warningPage });
-    console.log("Current phishing signs:", Array.from(phishingSigns));
-}
+    const warningUrl =
+      warningPage +
+      "?url=" +
+      encodeURIComponent(url.href) +
+      "&signs=" +
+      encodeURIComponent(JSON.stringify(Array.from(phishingSigns)));
+
+    chrome.tabs.update(tabId, { url: warningUrl });
+  }
 
 }); 
