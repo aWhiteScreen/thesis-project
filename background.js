@@ -8,9 +8,7 @@ function isNotHTTPS(protocol) {
 
   if(protocol !== "https:") {
     return true;
-  }
-
-  return false;
+  } else return false;
 }
 
 function hasIPAddress(url) {
@@ -47,9 +45,7 @@ function multipleSubDomains(url) {
 
   if (subdomains > 2) {
     return true;
-  }
-
-  return false;
+  } else return false;
 
 }
 
@@ -68,6 +64,42 @@ function letterNumberSubstitution(url) {
     }
 
     return false;
+
+}
+
+function suspiciousTLD(url) {
+  const tlds = [
+    "win",
+    "help",
+    "bond",
+    "cfd",
+    "finance",
+    "world",
+    "top",
+    "icu",
+    "support",
+    "vip",
+    "cyou",
+    "pro",
+    "sbs",
+    "monster",
+    "mom",
+    "click",
+    "quest",
+    "buzz",
+    "ink",
+    "fyi"
+  ];
+
+  const urlTLD = url.split(".").pop();
+  
+  console.log("Checking TLD:", urlTLD);
+
+  if (tlds.includes(urlTLD)) {
+    return true;
+  } else {
+    return false;
+  }
 
 }
 
@@ -113,6 +145,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   // Checks for some common letter-number substitutions, which can be a sign of phishing
   if (letterNumberSubstitution(url.host)) {
     phishingSigns.add("LETTER_SUBSTITUTION_WITH_NUMBERS");
+    phishing = true;
+  }
+
+  // Checks if the URL has a suspicious top-level domain, which can be a sign of phishing
+  if (suspiciousTLD(url.host)) {
+    phishingSigns.add("SUSPICIOUS_TLD");
     phishing = true;
   }
 
