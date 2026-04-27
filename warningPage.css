@@ -5,13 +5,9 @@
   word-break: break-all;
 }
 
-mark {
-  background-color: red;
-}
-
 .tooltip-highlight {
   position: relative;
-  background-color: red;
+  background-color: yellow;
   cursor: help;
 }
 
@@ -41,4 +37,8 @@ mark {
     width: 200px;
     height: 70px;
     font-size: 28px;
+}
+
+body {
+    background-color: red;
 }
