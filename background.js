@@ -116,6 +116,21 @@ function tooManyHyphens(url) {
     } else return false;
 }
 
+function tooManySlashes(url) {
+
+    let slashCount = 0; 
+
+    for(i = 0; i < url.length; i++) {
+      if (url[i] == "/") {
+        slashCount++;
+      }
+    }
+
+    if (slashCount >= 5) {
+      return true;
+    } else return false;
+}
+
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
@@ -171,6 +186,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   // Check if the URL has more hyphens than is expected, since it can be a sign of phishing
   if (tooManyHyphens(url.host)) {
     phishingSigns.add("TOO_MANY_HYPHENS");
+    phishing = true;
+  }
+
+  // Check if the URL has more hyphens than is expected, since it can be a sign of phishing
+  if (tooManySlashes(url.href)) {
+    phishingSigns.add("TOO_MANY_SLASHES");
     phishing = true;
   }
 

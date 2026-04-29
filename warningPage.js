@@ -55,6 +55,21 @@ function appendHighlightedHyphenPart(part) {
   }
 }
 
+function appendHighlightedSlashPart(text) {
+  for (const char of text) {
+    if (char === "/") {
+      urlElement.appendChild(
+        createHighlight(
+          char,
+          "Excessive slashes in a URL can indicate obfuscation, which is common in phishing attempts."
+        )
+      );
+    } else {
+      urlElement.append(char);
+    }
+  }
+}
+
 function displayHighlightedUrl(originalUrl, phishingSigns) {
   urlElement.textContent = "";
 
@@ -81,7 +96,11 @@ function displayHighlightedUrl(originalUrl, phishingSigns) {
     urlElement.append(protocol);
   }
 
-  urlElement.append("//");
+  if (phishingSigns.includes("TOO_MANY_SLASHES")) {
+    appendHighlightedSlashPart("//");
+  } else {
+    urlElement.append("//");
+  }
 
   const hostnameParts = hostname.split(".");
 
@@ -115,7 +134,11 @@ function displayHighlightedUrl(originalUrl, phishingSigns) {
   });
 
   if (restOfUrl) {
-    urlElement.append(restOfUrl);
+    if (phishingSigns.includes("TOO_MANY_SLASHES")) {
+      appendHighlightedSlashPart(restOfUrl);
+    } else {
+      urlElement.append(restOfUrl);
+    }
   }
 }
 
