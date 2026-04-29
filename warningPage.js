@@ -42,6 +42,19 @@ function appendHighlightedSubstitutionPart(part) {
   }
 }
 
+function appendHighlightedHyphenPart(part) {
+  for (const char of part) {
+    if (char == '-') {
+      urlElement.appendChild(
+        createHighlight(
+          char,
+          "2 or more hyphens are often used in phishing attacks to construct more trustworthy looking domains."
+        )
+      )
+    } else urlElement.append(char);
+  }
+}
+
 function displayHighlightedUrl(originalUrl, phishingSigns) {
   urlElement.textContent = "";
 
@@ -90,6 +103,8 @@ function displayHighlightedUrl(originalUrl, phishingSigns) {
           "Atypical top level domains are often used in phishing websites as they are free and easy to acquire."
         )
       );
+    } else if (phishingSigns.includes("TOO_MANY_HYPHENS") && part.includes("-")) {
+      appendHighlightedHyphenPart(part);
     } else {
       urlElement.append(part);
     }
