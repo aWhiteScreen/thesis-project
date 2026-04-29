@@ -68,40 +68,54 @@ function letterNumberSubstitution(url) {
 }
 
 function suspiciousTLD(url) {
-  const tlds = [
-    "win",
-    "help",
-    "bond",
-    "cfd",
-    "finance",
-    "world",
-    "top",
-    "icu",
-    "support",
-    "vip",
-    "cyou",
-    "pro",
-    "sbs",
-    "monster",
-    "mom",
-    "click",
-    "quest",
-    "buzz",
-    "ink",
-    "fyi"
-  ];
+    const tlds = [
+      "win",
+      "help",
+      "bond",
+      "cfd",
+      "finance",
+      "world",
+      "top",
+      "icu",
+      "support",
+      "vip",
+      "cyou",
+      "pro",
+      "sbs",
+      "monster",
+      "mom",
+      "click",
+      "quest",
+      "buzz",
+      "ink",
+      "fyi"
+    ];
 
-  const urlTLD = url.split(".").pop();
-  
-  console.log("Checking TLD:", urlTLD);
+    const urlTLD = url.split(".").pop();
 
-  if (tlds.includes(urlTLD)) {
-    return true;
-  } else {
-    return false;
-  }
+    if (tlds.includes(urlTLD)) {
+      return true;
+    } else {
+      return false;
+    }
 
 }
+
+function tooManyHyphens(url) {
+
+    let hyphenCount = 0; 
+
+    for(i = 0; i < url.length; i++) {
+      if (url[i] == "-") {
+        hyphenCount++;
+      }
+    }
+
+    if (hyphenCount >= 2) {
+      return true;
+    } else return false;
+}
+
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
@@ -151,6 +165,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   // Checks if the URL has a suspicious top-level domain, which can be a sign of phishing
   if (suspiciousTLD(url.host)) {
     phishingSigns.add("SUSPICIOUS_TLD");
+    phishing = true;
+  }
+
+  // Check if the URL has more hyphens than is expected, since it can be a sign of phishing
+  if (tooManyHyphens(url.host)) {
+    phishingSigns.add("TOO_MANY_HYPHENS");
     phishing = true;
   }
 
