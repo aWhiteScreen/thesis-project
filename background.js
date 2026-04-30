@@ -3,6 +3,7 @@ import { checkWhois } from "./whoisjson.js";
 
 const warningPage = chrome.runtime.getURL("warningPage.html");
 
+var oldURL = '';
 //const phishingSigns = new Set([
 //]);
 
@@ -160,6 +161,12 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     return;
   }
 
+
+  // If user decided to proceed to the phishing website, do not check for phishing again
+  if (url.href == oldURL) {
+    return;
+  }
+
   // Checks if the URL is not HTTPS, which is a common sign of phishing
   if (isNotHTTPS(url.protocol)) {
     phishingSigns.add("NOT_HTTPS");
@@ -239,4 +246,13 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     chrome.tabs.update(tabId, { url: warningUrl });
   }
 
-}); 
+});
+
+
+// Listener for checking if user proceeded to the phishing website anyway
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "ALLOW_URL") {
+    oldURL = message.url;
+    sendResponse({ ok: true });
+  }
+});

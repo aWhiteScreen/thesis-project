@@ -155,3 +155,18 @@ phishingSigns.forEach(sign => {
 document.getElementById("backButton").addEventListener("click", () => {
   window.location.href = "about:blank";
 });
+
+
+
+document.getElementById("continueButton").addEventListener("click", () => {
+  // Send message to background.js so phishing doesn't trigger again immediately
+  chrome.runtime.sendMessage(
+    {
+      type: "ALLOW_URL",
+      url: originalUrl
+    },
+    () => {
+      window.location.href = originalUrl;
+    }
+  );
+});
