@@ -163,7 +163,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
 
   // If user decided to proceed to the phishing website, do not check for phishing again
-  if (url.href == oldURL) {
+  if (url.hostname == oldURL.hostname) {
     return;
   }
 
