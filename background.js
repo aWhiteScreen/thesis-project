@@ -147,6 +147,10 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   
   let url = new URL(changeInfo.url);
 
+  if (url.hostname == "www.google.com" || url.hostname == "workspace.google.com" || url.hostname == "accounts.google.com") {
+    return;
+  }
+
   // Checks if the URL is not HTTPS, which is a common sign of phishing
   if (isNotHTTPS(url.protocol)) {
     phishingSigns.add("NOT_HTTPS");
