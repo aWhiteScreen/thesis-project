@@ -1,3 +1,6 @@
+import { checkWhois } from "./whoisjson.js";
+
+
 const warningPage = chrome.runtime.getURL("warningPage.html");
 
 //const phishingSigns = new Set([
@@ -105,7 +108,7 @@ function tooManyHyphens(url) {
 
     let hyphenCount = 0; 
 
-    for(i = 0; i < url.length; i++) {
+    for(let i = 0; i < url.length; i++) {
       if (url[i] == "-") {
         hyphenCount++;
       }
@@ -120,7 +123,7 @@ function tooManySlashes(url) {
 
     let slashCount = 0; 
 
-    for(i = 0; i < url.length; i++) {
+    for(let i = 0; i < url.length; i++) {
       if (url[i] == "/") {
         slashCount++;
       }
@@ -131,8 +134,14 @@ function tooManySlashes(url) {
     } else return false;
 }
 
+function oldDomain(age) {
+  if (age < 6) {
+    return true;
+  } else return false;
+}
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
   // Will change to true if any phishing is detected 
   let phishing = false;
@@ -196,6 +205,21 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   // Check if the URL has more hyphens than is expected, since it can be a sign of phishing
   if (tooManySlashes(url.href)) {
     phishingSigns.add("TOO_MANY_SLASHES");
+    phishing = true;
+  }
+
+  const websiteData = await checkWhois(url.hostname);
+  console.log("WHOIS data:", websiteData);
+  console.log("WHOIS months:", websiteData.age.months);
+
+  if(!websiteData) {
+    phishingSigns.add("NO_RECORD");
+    phishing = true;
+  }
+
+  // Checks if the domain is younger than 6 months, which can be a sign of phishing
+  if (oldDomain(websiteData.age.months)) {
+    phishingSigns.add("OLD_DOMAIN");
     phishing = true;
   }
 
