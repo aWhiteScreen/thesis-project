@@ -1,6 +1,7 @@
 const params = new URLSearchParams(window.location.search);
 
 const originalUrl = params.get("url");
+const parsedUrl = new URL(originalUrl);
 const phishingSigns = JSON.parse(params.get("signs") || "[]");
 
 const urlElement = document.getElementById("url");
@@ -70,10 +71,8 @@ function appendHighlightedSlashPart(text) {
   }
 }
 
-function displayHighlightedUrl(originalUrl, phishingSigns) {
+function displayHighlightedUrl(phishingSigns) {
   urlElement.textContent = "";
-
-  const parsedUrl = new URL(originalUrl);
 
   const protocol = parsedUrl.protocol;
   const hostname = parsedUrl.hostname;
@@ -163,7 +162,7 @@ document.getElementById("continueButton").addEventListener("click", () => {
   chrome.runtime.sendMessage(
     {
       type: "ALLOW_URL",
-      url: originalUrl
+      url: parsedUrl.hostname
     },
     () => {
       window.location.href = originalUrl;

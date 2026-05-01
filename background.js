@@ -161,9 +161,11 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     return;
   }
 
+  console.log("URL ", url.hostname);
+  console.log("old url: ", oldURL);
 
   // If user decided to proceed to the phishing website, do not check for phishing again
-  if (url.hostname == oldURL.hostname) {
+  if (url.hostname == oldURL) {
     return;
   }
 
