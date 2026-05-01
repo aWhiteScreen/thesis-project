@@ -1,4 +1,5 @@
 import { checkWhois } from "./whoisjson.js";
+import { checkSSL } from "./whoisjson.js";
 
 
 const warningPage = chrome.runtime.getURL("warningPage.html");
@@ -141,6 +142,12 @@ function oldDomain(age) {
   } else return false;
 }
 
+function selfSignedCert(subject, issuer) {
+  if (JSON.stringify(subject) === JSON.stringify(issuer)) {
+    return true;
+  } else return false;
+}
+
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
@@ -221,6 +228,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   console.log("WHOIS data:", websiteData);
   console.log("WHOIS months:", websiteData.age.months);
 
+  // Check if domain has no WHOIS record, which can be a sign of phishing
   if(!websiteData) {
     phishingSigns.add("NO_RECORD");
     phishing = true;
@@ -229,6 +237,18 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   // Checks if the domain is younger than 6 months, which can be a sign of phishing
   if (oldDomain(websiteData.age.months)) {
     phishingSigns.add("OLD_DOMAIN");
+    phishing = true;
+  }
+
+  const sslData = await checkSSL(url.hostname);
+  console.log("SSL data:", sslData);
+
+  console.log("SUBJECT TEST", sslData.details.subject);
+  console.log("ISSUER TEST", sslData.issuer);
+
+  // Check is the TLS/SSL certificate is self-signed, which can be a sign of phishing
+  if(selfSignedCert(sslData.details.subject, sslData.issuer)) {
+    phishingSigns.add("SELF_SIGNED_SSL");
     phishing = true;
   }
 

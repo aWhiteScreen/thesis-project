@@ -1,7 +1,6 @@
 const params = new URLSearchParams(window.location.search);
 
 const originalUrl = params.get("url");
-const parsedUrl = new URL(originalUrl);
 const phishingSigns = JSON.parse(params.get("signs") || "[]");
 
 const urlElement = document.getElementById("url");
@@ -71,8 +70,10 @@ function appendHighlightedSlashPart(text) {
   }
 }
 
-function displayHighlightedUrl(phishingSigns) {
+function displayHighlightedUrl(originalUrl, phishingSigns) {
   urlElement.textContent = "";
+
+  const parsedUrl = new URL(originalUrl);
 
   const protocol = parsedUrl.protocol;
   const hostname = parsedUrl.hostname;
@@ -156,13 +157,13 @@ document.getElementById("backButton").addEventListener("click", () => {
 });
 
 
-
+ 
 document.getElementById("continueButton").addEventListener("click", () => {
   // Send message to background.js so phishing doesn't trigger again immediately
   chrome.runtime.sendMessage(
     {
       type: "ALLOW_URL",
-      url: parsedUrl.hostname
+      url: new URL(originalUrl).hostname
     },
     () => {
       window.location.href = originalUrl;
