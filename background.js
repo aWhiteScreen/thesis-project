@@ -2,7 +2,7 @@ import { checkWhois } from "./whoisjson.js";
 import { checkSSL } from "./whoisjson.js";
 
 
-const warningPage = chrome.runtime.getURL("warningPage.html");
+const warningPage = chrome.runtime.getURL("html/warningPage.html");
 
 const tabStates = new Map();
 

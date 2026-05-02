@@ -11,11 +11,11 @@ chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
 
       if (state?.phishing) {
         icon.className = "status-icon danger";
-        img.src = "icons/warning128x128.png";
+        img.src = "/icons/warning128x128.png";
         text.textContent = "Current page may be unsafe";
       } else {
         icon.className = "status-icon safe";
-        img.src = "icons/safety128x128.png";
+        img.src = "/icons/safety128x128.png";
         text.textContent = "Current page is secure";
       }
     }
