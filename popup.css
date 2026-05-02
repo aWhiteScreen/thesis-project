@@ -1,0 +1,111 @@
+body {
+  margin: 0;
+  width: 235px;
+  height: 315px;
+  font-family: Arial, sans-serif;
+  background: #f7f3f2;
+}
+
+.popup {
+  box-sizing: border-box;
+  padding: 12px;
+  height: 100%;
+  color: #222;
+}
+
+.top-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.top-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-box {
+  width: 45px;
+  height: 45px;
+  background: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-box img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+h1 {
+  font-size: 22px;
+  font-weight: normal;
+  margin: 0;
+  line-height: 1.1;
+}
+
+/* Big circular status icon */
+.status-icon {
+  width: 78px;
+  height: 78px;
+  margin: 32px auto 14px;
+  border: 5px solid rgb(0, 0, 0);
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-icon img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.status-icon.safe {
+  background: rgb(80, 175, 0);
+}
+
+.status-icon.danger {
+  background: rgb(252, 0, 0);
+}
+
+#statusText {
+  text-align: center;
+  font-size: 16px;
+  margin: 0 0 28px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+button {
+  border: none;
+  color: white;
+  font-size: 12px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.report {
+  background: #e00000;
+}
+
+.whitelist {
+  background: #22c822;
+}

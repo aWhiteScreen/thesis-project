@@ -1,10 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>Phishing Detector</title>
+  <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <h3>Phishing Detector</h3>
-  <p>Status: Active</p>
+  <div class="popup">
+
+    <div class="top-row">
+      <img src="icons/moon.png" class="top-icon" alt="Dark mode">
+    </div>
+
+    <div class="brand-row">
+      <div class="logo-box">
+        <img src="icons/logo.png" alt="Logo">
+      </div>
+      <h1>Phishing<br>Detector</h1>
+    </div>
+
+    <div id="statusIcon" class="status-icon safe">
+      <img id="statusImg" src="icons/safety128x128.png" alt="status">
+    </div>
+    
+
+    <p id="statusText">Current page is secure</p>
+
+    <div class="buttons">
+      <button class="report">Report website</button>
+      <button class="whitelist">Whitelist website</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
 </body>
 </html>

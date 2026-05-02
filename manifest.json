@@ -16,6 +16,13 @@
     "type": "module"
   },
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/safety16x16.png",
+      "32": "icons/safety32x32.png",
+      "48": "icons/safety48x48.png",
+      "64": "icons/safety64x64.png",
+      "128": "icons/safety128x128.png"
+    }
   }
 }

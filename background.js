@@ -4,10 +4,40 @@ import { checkSSL } from "./whoisjson.js";
 
 const warningPage = chrome.runtime.getURL("warningPage.html");
 
+const tabStates = new Map();
+
+const SAFE_ICONS = {
+  "16": "icons/safety16x16.png",
+  "32": "icons/safety32x32.png",
+  "48": "icons/safety48x48.png",
+  "64": "icons/safety64x64.png",
+  "128": "icons/safety128x128.png"
+};
+
+const WARNING_ICONS = {
+  "16": "icons/warning16x16.png",
+  "32": "icons/warning32x32.png",
+  "48": "icons/warning48x48.png",
+  "64": "icons/warning64x64.png",
+  "128": "icons/warning128x128.png"
+};
+
+function setTabState(tabId, phishing, signs = []) {
+  tabStates.set(tabId, {
+    phishing,
+    signs
+  });
+
+  chrome.action.setIcon({
+    tabId,
+    path: phishing ? WARNING_ICONS : SAFE_ICONS
+  });
+}
+
+
 var oldURL = '';
 //const phishingSigns = new Set([
 //]);
-
 
 function isNotHTTPS(protocol) {
 
@@ -40,7 +70,7 @@ function hasIPAddress(url) {
 }
 
 function urlLength(url) {
-  return url.length > 52;
+  return url.length > 75;
 }
 
 function multipleSubDomains(url) {
@@ -171,8 +201,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   console.log("URL ", url.hostname);
   console.log("old url: ", oldURL);
 
-  // If user decided to proceed to the phishing website, do not check for phishing again
+  // If user decided to proceed to the phishing website, do not check for phishing again, also keeps the warning symbol
   if (url.hostname == oldURL) {
+    setTabState(tabId, true, Array.from(phishingSigns));
     return;
   }
 
@@ -258,6 +289,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
   // If phishing is detected, redirect to the warning page
   if (phishing) {
+    setTabState(tabId, true, Array.from(phishingSigns));
+
+
     const warningUrl =
       warningPage +
       "?url=" +
@@ -266,6 +300,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       encodeURIComponent(JSON.stringify(Array.from(phishingSigns)));
 
     chrome.tabs.update(tabId, { url: warningUrl });
+  } else {
+    setTabState(tabId, false, []); 
   }
 
 });
@@ -277,4 +313,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     oldURL = message.url;
     sendResponse({ ok: true });
   }
+
+  if (message.type === "GET_TAB_STATE") {
+    const state = tabStates.get(message.tabId) || {
+      phishing: false,
+      signs: []
+    };
+
+    sendResponse(state);
+    return true;
+  }
+
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  tabStates.delete(tabId);
 });
