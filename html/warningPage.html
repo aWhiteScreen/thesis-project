@@ -1,23 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Security Warning</title>
+  <title>Dangerous site!</title>
   <link rel="stylesheet" href="../css/warningPage.css">
 </head>
-<body>
-  <h1>Deceptive site ahead</h1>
-  <p>This website may try to steal your information.</p>
 
-  <h2>URL:</h2>
+<body>
+
+
+  <div id="topBar">
+    <img src="/icons/pigeon_outline.png" id="logo" alt="Logo">
+    <span id="extensionName">ADD-ON NAME</span>
+  </div>
+
+  <div id="warningHeader">
+
+    <img
+      src="/icons/warning128x128.png"
+      id="warningIcon"
+      alt="Warning"
+    >
+
+    <h1>Dangerous site!</h1>
+
+  </div>
+
+  <p id="genericText">
+    This website has been flagged as potentially dangerous and attackers might
+    trick you into installing malicious software or revealing sensitive
+    information such as passwords or credit cards.
+  </p>
+
   <p id="url"></p>
 
-  <h2>Detected signs:</h2>
-  <ul id="signs"></ul>
+  <h2>Other phishing signs:</h2>
+
+  <div id="signs"></div>
 
   <button id="backButton">Go back to safety</button>
 
-  <button id="continueButton">Continue to website</button>
+  <button id="detailsToggle">Show details</button>
 
-  <script src="../warningPage.js"></script>
+  <div id="detailsSection">
+    <p>
+      Phishing websites can often look and feel like their real counterparts.
+      Choosing to proceed forward can put your personal information at risk.
+      Targeted information may include passwords, credit card numbers, contact
+      info and even software activation keys.
+    </p>
+
+    <p>
+      Only visit
+      <a href="#" id="continueLink">this site</a>
+      if you are aware of the possible dangers (not recommended)
+    </p>
+  </div>
+
+  <script src="/warningPage.js"></script>
 </body>
 </html>

@@ -146,20 +146,54 @@ displayHighlightedUrl(originalUrl, phishingSigns);
 
 const signsList = document.getElementById("signs");
 
+const phishingSignMessages = {
+  SELF_SIGNED_SSL:
+    "The SSL/TLS certificate is self-signed rather than signed by a recognized Certificate Authority which indicates an increased chance of phishing.",
+  LONG_URL:
+    "The URL matches or exceeds the length of a typical phishing URL. Long URLs may used to obfuscate suspicious elements from the user.",
+  TOO_MANY_HYPHENS:
+    "Legitimate websites typically do not use more than 1 hyphen. 2 or more hyphens suggest an increased chance of phishing.",
+  TOO_MANY_SLASHES:
+    "An excessive number of slashes (5 or more) suggests in increased chance of phishing."
+};
+
 phishingSigns.forEach(sign => {
-  const li = document.createElement("li");
-  li.textContent = sign;
-  signsList.appendChild(li);
+  const message = phishingSignMessages[sign];
+
+  if (!message) {
+    return;
+  }
+
+  const box = document.createElement("div");
+  box.className = "phishing-sign-box";
+  box.textContent = message;
+
+  signsList.appendChild(box);
 });
+
 
 document.getElementById("backButton").addEventListener("click", () => {
   window.location.href = "about:blank";
 });
 
 
- 
-document.getElementById("continueButton").addEventListener("click", () => {
-  // Send message to background.js so phishing doesn't trigger again immediately
+const detailsToggle = document.getElementById("detailsToggle");
+const detailsSection = document.getElementById("detailsSection");
+const continueLink = document.getElementById("continueLink");
+
+detailsSection.style.display = "none";
+detailsToggle.textContent = "Show details";
+
+detailsToggle.addEventListener("click", () => {
+  const isHidden = detailsSection.style.display === "none";
+
+  detailsSection.style.display = isHidden ? "block" : "none";
+  detailsToggle.textContent = isHidden ? "Hide details" : "Show details";
+});
+
+continueLink.addEventListener("click", event => {
+  event.preventDefault();
+
   chrome.runtime.sendMessage(
     {
       type: "ALLOW_URL",

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Phishing URL Detector",
+  "name": "Add-on name",
   "version": "1.0",
   "description": "Detects phishing signs in URLs",
   "permissions": ["tabs", "scripting"],
