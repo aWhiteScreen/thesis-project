@@ -1,6 +1,6 @@
 import { checkWhois } from "./whoisjson.js";
 import { checkSSL } from "./whoisjson.js";
-
+import { checkGoogleSafeBrowsing } from "./googleSafeBrowsingApi.js";
 
 const warningPage = chrome.runtime.getURL("html/warningPage.html");
 
@@ -22,6 +22,8 @@ const WARNING_ICONS = {
   "128": "icons/warning128x128.png"
 };
 
+var oldURL = '';
+
 function setTabState(tabId, phishing, signs = []) {
   tabStates.set(tabId, {
     phishing,
@@ -34,10 +36,45 @@ function setTabState(tabId, phishing, signs = []) {
   });
 }
 
+async function getWhitelist() {
+  const data = await chrome.storage.local.get("whitelist");
+  return data.whitelist || [];
+}
 
-var oldURL = '';
-//const phishingSigns = new Set([
-//]);
+function normalizeHostname(input) {
+  try {
+    if (!input.startsWith("http://") && !input.startsWith("https://")) {
+      input = "https://" + input;
+    }
+
+    return new URL(input).hostname.replace(/^www\./, "").toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
+async function isWhitelisted(hostname) {
+  const whitelist = await getWhitelist();
+  const cleanHost = hostname.replace(/^www\./, "").toLowerCase();
+
+  return whitelist.some((site) => {
+    return cleanHost === site || cleanHost.endsWith("." + site);
+  });
+}
+
+async function getBlacklist() {
+  const data = await chrome.storage.local.get("blacklist");
+  return data.blacklist || [];
+}
+
+async function isBlacklisted(hostname) {
+  const blacklist = await getBlacklist();
+  const cleanHost = hostname.replace(/^www\./, "").toLowerCase();
+
+  return blacklist.some((site) => {
+    return cleanHost === site || cleanHost.endsWith("." + site);
+  });
+}
 
 function isNotHTTPS(protocol) {
 
@@ -166,7 +203,7 @@ function tooManySlashes(url) {
     } else return false;
 }
 
-function oldDomain(age) {
+function youngDomain(age) {
   if (age < 6) {
     return true;
   } else return false;
@@ -194,17 +231,32 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   
   let url = new URL(changeInfo.url);
 
-  if (url.hostname == "www.google.com" || url.hostname == "workspace.google.com" || url.hostname == "accounts.google.com" || url.hostname == "mail.google.com") {
+  // Check if the URL is whitelisted
+  if (await isWhitelisted(url.hostname)) {
+    setTabState(tabId, false, []);
     return;
   }
 
-  console.log("URL ", url.hostname);
-  console.log("old url: ", oldURL);
+  if (url.hostname == "www.google.com" || url.hostname == "workspace.google.com" || url.hostname == "accounts.google.com" || url.hostname == "mail.google.com") {
+    return;
+  }
 
   // If user decided to proceed to the phishing website, do not check for phishing again, also keeps the warning symbol
   if (url.hostname == oldURL) {
     setTabState(tabId, true, Array.from(phishingSigns));
     return;
+  }
+
+  // Check if the URL is blacklisted by the user
+  if (await isBlacklisted(url.hostname)) {
+    phishingSigns.add("BLACKLISTED_BY_USER");
+    phishing = true;
+  }
+
+  // Checks if the URL is blacklisted by Google's safe browsing API
+  if (await checkGoogleSafeBrowsing(url.href)) {
+    phishingSigns.add("BLACKLISTED_BY_GOOGLE");
+    phishing = true;
   }
 
   // Checks if the URL is not HTTPS, which is a common sign of phishing
@@ -257,7 +309,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
   const websiteData = await checkWhois(url.hostname);
   console.log("WHOIS data:", websiteData);
-  console.log("WHOIS months:", websiteData.age.months);
 
   // Check if domain has no WHOIS record, which can be a sign of phishing
   if(!websiteData) {
@@ -266,26 +317,22 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 
   // Checks if the domain is younger than 6 months, which can be a sign of phishing
-  if (oldDomain(websiteData.age.months)) {
-    phishingSigns.add("OLD_DOMAIN");
-    phishing = true;
+  if (websiteData?.age?.months !== undefined) {
+    if (youngDomain(websiteData.age.months)) {
+      phishingSigns.add("YOUNG_DOMAIN");
+      phishing = true;
+    }
   }
 
   const sslData = await checkSSL(url.hostname);
-  console.log("SSL data:", sslData);
-
-  console.log("SUBJECT TEST", sslData.details.subject);
-  console.log("ISSUER TEST", sslData.issuer);
-
+ 
   // Check is the TLS/SSL certificate is self-signed, which can be a sign of phishing
-  if(selfSignedCert(sslData.details.subject, sslData.issuer)) {
-    phishingSigns.add("SELF_SIGNED_SSL");
-    phishing = true;
+  if (sslData?.details?.subject && sslData?.issuer) {
+    if (selfSignedCert(sslData.details.subject, sslData.issuer)) {
+      phishingSigns.add("SELF_SIGNED_SSL");
+      phishing = true;
+    }
   }
-
-  console.log("Current phishing signs:", Array.from(phishingSigns));
-
-  console.log("Checking URL:", url);
 
   // If phishing is detected, redirect to the warning page
   if (phishing) {
@@ -321,6 +368,98 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     };
 
     sendResponse(state);
+    return true;
+  }
+
+  if (message.type === "ADD_TO_WHITELIST") {
+    const hostname = normalizeHostname(message.url);
+
+    if (!hostname) {
+      sendResponse({ ok: false, error: "Invalid URL" });
+      return true;
+    }
+
+    chrome.storage.local.get("whitelist").then((data) => {
+      const whitelist = data.whitelist || [];
+
+      if (!whitelist.includes(hostname)) {
+        whitelist.push(hostname);
+      }
+
+      chrome.storage.local.set({ whitelist }).then(() => {
+        sendResponse({ ok: true, whitelist });
+      });
+    });
+
+    return true;
+  }
+
+  if (message.type === "GET_WHITELIST") {
+    chrome.storage.local.get("whitelist").then((data) => {
+      sendResponse({ whitelist: data.whitelist || [] });
+    });
+
+    return true;
+  }
+
+  if (message.type === "REMOVE_FROM_WHITELIST") {
+    const hostname = normalizeHostname(message.url);
+
+    chrome.storage.local.get("whitelist").then((data) => {
+      const whitelist = data.whitelist || [];
+      const updatedWhitelist = whitelist.filter((site) => site !== hostname);
+
+      chrome.storage.local.set({ whitelist: updatedWhitelist }).then(() => {
+        sendResponse({ ok: true, whitelist: updatedWhitelist });
+      });
+    });
+
+    return true;
+  }
+
+  if (message.type === "ADD_TO_BLACKLIST") {
+    const hostname = normalizeHostname(message.url);
+
+    if (!hostname) {
+      sendResponse({ ok: false, error: "Invalid URL" });
+      return true;
+    }
+
+    chrome.storage.local.get("blacklist").then((data) => {
+      const blacklist = data.blacklist || [];
+
+      if (!blacklist.includes(hostname)) {
+        blacklist.push(hostname);
+      }
+
+      chrome.storage.local.set({ blacklist }).then(() => {
+        sendResponse({ ok: true, blacklist });
+      });
+    });
+
+    return true;
+  }
+
+  if (message.type === "GET_BLACKLIST") {
+    chrome.storage.local.get("blacklist").then((data) => {
+      sendResponse({ blacklist: data.blacklist || [] });
+    });
+
+    return true;
+  }
+
+  if (message.type === "REMOVE_FROM_BLACKLIST") {
+    const hostname = normalizeHostname(message.url);
+
+    chrome.storage.local.get("blacklist").then((data) => {
+      const blacklist = data.blacklist || [];
+      const updatedBlacklist = blacklist.filter((site) => site !== hostname);
+
+      chrome.storage.local.set({ blacklist: updatedBlacklist }).then(() => {
+        sendResponse({ ok: true, blacklist: updatedBlacklist });
+      });
+    });
+
     return true;
   }
 

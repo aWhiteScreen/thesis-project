@@ -154,7 +154,15 @@ const phishingSignMessages = {
   TOO_MANY_HYPHENS:
     "Legitimate websites typically do not use more than 1 hyphen. 2 or more hyphens suggest an increased chance of phishing.",
   TOO_MANY_SLASHES:
-    "An excessive number of slashes (5 or more) suggests in increased chance of phishing."
+    "An excessive number of slashes (5 or more) suggests in increased chance of phishing.",
+  NO_RECORD:
+    "This URL has no WHOIS record associated with it which indicates an increased chance of phishing.",
+  BLACKLISTED_BY_USER:
+    "This URL was blacklisted by the user for, potentially, being a phishing URL.",
+  BLACKLISTED_BY_GOOGLE:
+    "The URL has been blacklisted by Google as a harmful website that may include phishing.",
+  YOUNG_DOMAIN:
+    "This domain is younger than 6 months which indicates an increased chance of phishing. Legitimate domains tend to be older."
 };
 
 phishingSigns.forEach(sign => {

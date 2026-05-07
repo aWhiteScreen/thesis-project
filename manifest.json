@@ -3,7 +3,7 @@
   "name": "Add-on name",
   "version": "1.0",
   "description": "Detects phishing signs in URLs",
-  "permissions": ["tabs", "scripting"],
+  "permissions": ["tabs", "scripting", "storage"],
   "host_permissions": ["<all_urls>"],
   "content_scripts": [
     {

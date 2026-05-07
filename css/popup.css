@@ -116,3 +116,77 @@ button {
 .whitelist {
   background: #25c425;
 }
+
+.hidden {
+  display: none;
+}
+
+.whitelist-brand {
+  justify-content: flex-start;
+  margin-bottom: 20px;
+}
+
+.url-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#whitelistInput, #blacklistInput {
+  width: 210px;
+  font-size: 22px;
+  padding: 5px 8px;
+  border: none;
+  background: #d9d9d9;
+}
+
+.plus-btn {
+  color: black;
+  background: transparent;
+  border: none;
+  font-size: 32px;
+  padding: 0 4px;
+}
+
+h2 {
+  font-size: 34px;
+  font-weight: normal;
+  margin: 18px 0 6px;
+}
+
+#whitelistBox, #blacklistBox {
+  height: 165px;
+  background: #d9d9d9;
+  overflow-y: auto;
+  padding: 8px;
+  font-size: 16px;
+}
+
+.whitelist-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  word-break: break-all;
+  font-size: 24px;
+}
+
+.remove-whitelist {
+  color: black;
+  background: transparent;
+  border: none;
+  font-size: 26px;
+  padding: 0 10px;
+}
+
+.back-btn {
+  float: right;
+  margin-top: 25px;
+  color: black;
+  background: transparent;
+  border: 3px solid black;
+  border-radius: 18px;
+  font-size: 28px;
+  padding: 0 8px;
+}
+
