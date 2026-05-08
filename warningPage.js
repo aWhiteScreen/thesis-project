@@ -156,13 +156,15 @@ const phishingSignMessages = {
   TOO_MANY_SLASHES:
     "An excessive number of slashes (5 or more) suggests in increased chance of phishing.",
   NO_RECORD:
-    "This URL has no WHOIS record associated with it which indicates an increased chance of phishing.",
+    "This URL has no WHOIS record associated with it which indicates an increased chance of phishing since phishing websites have short lifespans and do not always get logged.",
   BLACKLISTED_BY_USER:
     "This URL was blacklisted by the user for, potentially, being a phishing URL.",
   BLACKLISTED_BY_GOOGLE:
     "The URL has been blacklisted by Google as a harmful website that may include phishing.",
   YOUNG_DOMAIN:
-    "This domain is younger than 6 months which indicates an increased chance of phishing. Legitimate domains tend to be older."
+    "This domain is younger than 6 months which indicates an increased chance of phishing. Legitimate domains tend to be older.",
+  DOMAIN_MISMATCH:
+    "The registered domain and the domain provided in the URL do not match. This indicates an increased chance of phishing since the URL may be attempting to imitate another brand."
 };
 
 phishingSigns.forEach(sign => {

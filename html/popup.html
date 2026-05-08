@@ -9,15 +9,17 @@
   <div class="popup">
 
     <div id="mainView">
-      <div class="top-row">
-        <img src="/icons/moon.png" class="top-icon" alt="Dark mode">
+      <div id="themeToggle" class="top-row">
+        <img id="themeIcon" src="/icons/moon.png" class="top-icon" alt="Dark mode">
       </div>
 
       <div class="brand-row">
+
         <div class="logo-box">
           <img src="/icons/pigeon_outline.png" alt="Logo">
         </div>
         <h1>Phishing Detector</h1>
+
       </div>
 
       <div id="statusIcon" class="status-icon safe">
@@ -27,22 +29,29 @@
       <p id="statusText">Current page is secure</p>
 
       <div class="buttons">
+
         <button id="openReport" class="report">Report website</button>
         <button id="openWhitelist" class="whitelist">Whitelist website</button>
+
       </div>
     </div>
 
     <div id="whitelistView" class="hidden">
+
       <div class="brand-row whitelist-brand">
+
         <div class="logo-box">
           <img src="/icons/pigeon_outline.png" alt="Logo">
         </div>
         <h1>Phishing Detector</h1>
+
       </div>
 
       <div class="url-row">
+
         <input id="whitelistInput" type="text" placeholder="Enter URL">
         <button id="addWhitelist" class="plus-btn">+</button>
+
       </div>
 
       <h2>Whitelist</h2>
@@ -50,19 +59,26 @@
       <div id="whitelistBox"></div>
 
       <button id="backButton" class="back-btn">Back</button>
+
     </div>
 
     <div id="reportView" class="hidden">
+
       <div class="brand-row whitelist-brand">
+
         <div class="logo-box">
           <img src="/icons/pigeon_outline.png" alt="Logo">
         </div>
+
         <h1>Phishing Detector</h1>
+
       </div>
 
       <div class="url-row">
-        <input id="reportInput" type="text" placeholder="Enter URL">
+
+        <input id="blacklistInput" type="text" placeholder="Enter URL">
         <button id="addBlacklist" class="plus-btn">+</button>
+
       </div>
 
       <h2>Blacklist</h2>
@@ -70,6 +86,7 @@
       <div id="blacklistBox"></div>
 
       <button id="reportBackButton" class="back-btn">Back</button>
+
     </div>
 
   </div>

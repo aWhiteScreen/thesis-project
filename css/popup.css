@@ -50,7 +50,7 @@ body {
 }
 
 .logo-box img {
-  width: 55px;
+  width: 70px;
   height: auto;
   object-fit: contain;
 }
@@ -188,5 +188,62 @@ h2 {
   border-radius: 18px;
   font-size: 28px;
   padding: 0 8px;
+}
+
+#themeToggle {
+  cursor: pointer;
+}
+
+body.dark-mode {
+  background: #111;
+}
+
+body.dark-mode .popup {
+  color: white;
+}
+
+body.dark-mode .top-row::after {
+  content: "Switch to light mode";
+  color: white;
+}
+
+body.dark-mode #whitelistInput,
+body.dark-mode #blacklistInput {
+  background: #d89429;
+  color: white;
+}
+
+body.dark-mode #whitelistInput::placeholder,
+body.dark-mode #blacklistInput::placeholder {
+  color: white;
+  opacity: 1;
+}
+
+body.dark-mode #whitelistBox,
+body.dark-mode #blacklistBox {
+  background: #d89429;
+  color: white;
+}
+
+body.dark-mode .plus-btn {
+  color: white;
+}
+
+body.dark-mode .remove-whitelist {
+  color: white;
+}
+
+body.dark-mode .back-btn {
+  color: white;
+  background: #d89429;
+  border-color: white;
+}
+
+body.dark-mode .status-icon {
+  border-color: white;
+}
+
+body.dark-mode button {
+  border-color: white;
 }
 

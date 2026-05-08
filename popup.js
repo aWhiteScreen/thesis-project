@@ -17,6 +17,33 @@ const reportInput = document.getElementById("reportInput");
 const whitelistBox = document.getElementById("whitelistBox");
 const blacklistBox = document.getElementById("blacklistBox");
 
+const themeToggle = document.getElementById("themeToggle");
+const themeIcon = document.getElementById("themeIcon");
+
+function applyTheme(isDarkMode) {
+  if (isDarkMode) {
+    document.body.classList.add("dark-mode");
+    themeIcon.src = "/icons/moon_yellow.png";
+    themeIcon.alt = "Light mode";
+  } else {
+    document.body.classList.remove("dark-mode");
+    themeIcon.src = "/icons/moon.png";
+    themeIcon.alt = "Dark mode";
+  }
+}
+
+chrome.storage.local.get("darkMode").then((data) => {
+  applyTheme(data.darkMode === true);
+});
+
+themeToggle.addEventListener("click", () => {
+  const isDarkMode = !document.body.classList.contains("dark-mode");
+
+  chrome.storage.local.set({ darkMode: isDarkMode }).then(() => {
+    applyTheme(isDarkMode);
+  });
+});
+
 function hideAllViews() {
   mainView.classList.add("hidden");
   whitelistView.classList.add("hidden");

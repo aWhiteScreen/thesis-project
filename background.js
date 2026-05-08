@@ -215,6 +215,27 @@ function selfSignedCert(subject, issuer) {
   } else return false;
 }
 
+function registeredDomainMismatch(hostname, websiteData) {
+  const urlDomain = hostname.replace(/^www\./, "").toLowerCase();
+
+  const whoisName = websiteData?.name?.replace(/^www\./, "").toLowerCase();
+  const whoisIdnName = websiteData?.idnName?.replace(/^www\./, "").toLowerCase();
+
+  if (!whoisName && !whoisIdnName) {
+    return false;
+  }
+
+  const matchesWhoisName =
+    whoisName &&
+    (urlDomain === whoisName || urlDomain.endsWith("." + whoisName));
+
+  const matchesIdnName =
+    whoisIdnName &&
+    (urlDomain === whoisIdnName || urlDomain.endsWith("." + whoisIdnName));
+
+  return !matchesWhoisName && !matchesIdnName;
+}
+
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
@@ -308,7 +329,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 
   const websiteData = await checkWhois(url.hostname);
-  console.log("WHOIS data:", websiteData);
 
   // Check if domain has no WHOIS record, which can be a sign of phishing
   if(!websiteData) {
@@ -332,6 +352,12 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       phishingSigns.add("SELF_SIGNED_SSL");
       phishing = true;
     }
+  }
+
+  // Checks if URL domain does not match with the registered domain, which can be a sign of phishing
+  if (registeredDomainMismatch(url.hostname, websiteData)) {
+    phishingSigns.add("DOMAIN_MISMATCH");
+    phishing = true;
   }
 
   // If phishing is detected, redirect to the warning page
