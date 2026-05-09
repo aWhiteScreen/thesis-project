@@ -242,6 +242,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   // Will change to true if any phishing is detected 
   let phishing = false;
 
+  // List of current phishingSigns
   let phishingSigns = new Set();
 
   // Only check when loading a new URL
@@ -273,6 +274,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     phishingSigns.add("BLACKLISTED_BY_USER");
     phishing = true;
   }
+
+  let googleData = await checkGoogleSafeBrowsing(url.href);
+  console.log("google data", googleData);
 
   // Checks if the URL is blacklisted by Google's safe browsing API
   if (await checkGoogleSafeBrowsing(url.href)) {

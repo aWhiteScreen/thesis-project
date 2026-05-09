@@ -48,7 +48,7 @@ function appendHighlightedHyphenPart(part) {
       urlElement.appendChild(
         createHighlight(
           char,
-          "2 or more hyphens are often used in phishing attacks to construct more trustworthy looking domains."
+          "Legitimate websites typically do not use more than 1 hyphen. 2 or more hyphens suggest an increased chance of phishing."
         )
       )
     } else urlElement.append(char);
@@ -61,7 +61,7 @@ function appendHighlightedSlashPart(text) {
       urlElement.appendChild(
         createHighlight(
           char,
-          "Excessive slashes in a URL can indicate obfuscation, which is common in phishing attempts."
+          "An excessive number of slashes (5 or more) suggests in increased chance of phishing since they can be used to obfuscate suspicious parts of a URL."
         )
       );
     } else {
@@ -151,10 +151,6 @@ const phishingSignMessages = {
     "The SSL/TLS certificate is self-signed rather than signed by a recognized Certificate Authority which indicates an increased chance of phishing.",
   LONG_URL:
     "The URL matches or exceeds the length of a typical phishing URL. Long URLs may used to obfuscate suspicious elements from the user.",
-  TOO_MANY_HYPHENS:
-    "Legitimate websites typically do not use more than 1 hyphen. 2 or more hyphens suggest an increased chance of phishing.",
-  TOO_MANY_SLASHES:
-    "An excessive number of slashes (5 or more) suggests in increased chance of phishing.",
   NO_RECORD:
     "This URL has no WHOIS record associated with it which indicates an increased chance of phishing since phishing websites have short lifespans and do not always get logged.",
   BLACKLISTED_BY_USER:
