@@ -33,7 +33,7 @@ function appendHighlightedSubstitutionPart(part) {
       urlElement.appendChild(
         createHighlight(
           char,
-          "Numbers are typically not used in legitimate URLs but they are often used by phishers to mimic URL symbols or to lengthen the URL. "
+          "Numbers can be used in phishing URLs to substitute letters with familiar looking numbers to try and trick the user into believing it is a legitimate URL."
         )
       );
     } else {

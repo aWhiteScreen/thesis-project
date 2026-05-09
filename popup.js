@@ -12,7 +12,7 @@ const addWhitelist = document.getElementById("addWhitelist");
 const addBlacklist = document.getElementById("addBlacklist");
 
 const whitelistInput = document.getElementById("whitelistInput");
-const reportInput = document.getElementById("reportInput");
+const blacklistInput = document.getElementById("blacklistInput");
 
 const whitelistBox = document.getElementById("whitelistBox");
 const blacklistBox = document.getElementById("blacklistBox");
@@ -72,7 +72,7 @@ function showReportView() {
       !tab.url.startsWith("chrome://") &&
       !tab.url.startsWith("chrome-extension://")
     ) {
-      reportInput.value = tab.url;
+      blacklistInput.value = tab.url;
     }
   });
 }
@@ -164,7 +164,7 @@ addWhitelist.addEventListener("click", () => {
 });
 
 addBlacklist.addEventListener("click", () => {
-  const url = reportInput.value.trim();
+  const url = blacklistInput.value.trim();
 
   if (!url) return;
 
@@ -175,7 +175,7 @@ addBlacklist.addEventListener("click", () => {
     },
     (response) => {
       if (response?.ok) {
-        reportInput.value = "";
+        blacklistInput.value = "";
         loadBlacklist();
       } else {
         alert(response?.error || "Could not blacklist URL");

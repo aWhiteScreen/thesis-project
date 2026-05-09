@@ -18,7 +18,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 8px;
+  margin-bottom: 14px; 
 }
 
 .top-icon {
@@ -91,7 +91,7 @@ h1 {
 #statusText {
   text-align: center;
   font-size: 21px;
-  margin: 0 0 42px;
+  margin: 0 0 24px; /* was 42px */
 }
 
 .buttons {
@@ -183,7 +183,7 @@ h2 {
   float: right;
   margin-top: 25px;
   color: black;
-  background: transparent;
+  background: #d9d9d9;
   border: 3px solid black;
   border-radius: 18px;
   font-size: 28px;

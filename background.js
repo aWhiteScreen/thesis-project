@@ -113,14 +113,20 @@ function urlLength(url) {
 }
 
 function multipleSubDomains(url) {
+  const parts = url.split(".");
 
-  // -2 because we don't count the top level domain and the main domain
-  let subdomains = url.split(".").length - 2;
+  // If the first part is "www", ignore both "www" and the TLD,
+  // Otherwise, ignore only the TLD (-1).
+  const subdomains =
+    parts[0].toLowerCase() === "www"
+      ? parts.length - 2
+      : parts.length - 1;
 
   if (subdomains > 2) {
     return true;
-  } else return false;
-
+  } else {
+    return false;
+  }
 }
 
 function letterNumberSubstitution(url) {

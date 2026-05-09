@@ -83,20 +83,25 @@ body {
   font-size: 22px;
 }
 
+#detailsWrapper {
+  margin-left: 370px;
+  margin-top: -30px;
+  max-width: 700px;
+}
+
 #detailsToggle {
   background: none;
   border: none;
   color: white;
   text-decoration: underline;
   font-size: 22px;
-  margin-left: 170px;
   cursor: pointer;
+  padding: 0;
+  margin: 0;
 }
 
 #detailsSection {
-  max-width: 700px;
-  margin-left: 370px;
-  margin-top: -20px;
+  margin-top: 14px;
   font-size: 16px;
 }
 
