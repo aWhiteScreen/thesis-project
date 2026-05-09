@@ -1,6 +1,22 @@
 import { checkWhois } from "./whoisjson.js";
 import { checkSSL } from "./whoisjson.js";
 import { checkGoogleSafeBrowsing } from "./googleSafeBrowsingApi.js";
+import { hasIPAddress } from "./phishingDetection/hasIPAddress.js";
+import { isNotHTTPS } from "./phishingDetection/isNotHTTPS.js";
+import { tooManyHyphens } from "./phishingDetection/tooManyHyphens.js";
+import { tooManySlashes } from "./phishingDetection/tooManySlashes.js";
+import { letterNumberSubstitution } from "./phishingDetection/letterNumberSubstitution.js";
+import { suspiciousTLD } from "./phishingDetection/suspiciousTLD.js";
+import { urlLength } from "./phishingDetection/urlLength.js"
+import { youngDomain } from "./phishingDetection/youngDomain.js";
+import { multipleSubDomains } from "./phishingDetection/multipleSubDomains.js";
+import { registeredDomainMismatch } from "./phishingDetection/registeredDomainMismatch.js";
+import { selfSignedCert } from "./phishingDetection/selfSignedCert.js";
+import { atSign } from "./phishingDetection/atSign.js";
+import { getBlacklist, isBlacklisted } from "./phishingDetection/userBlacklist.js";
+import { getWhitelist, isWhitelisted } from "./phishingDetection/userWhitelist.js";
+import { normalizeHostname } from "./util/normalizeHostname.js";
+
 
 const warningPage = chrome.runtime.getURL("html/warningPage.html");
 
@@ -36,218 +52,6 @@ function setTabState(tabId, phishing, signs = []) {
     tabId,
     path: phishing ? WARNING_ICONS : SAFE_ICONS
   });
-}
-
-async function getWhitelist() {
-  const data = await chrome.storage.local.get("whitelist");
-  return data.whitelist || [];
-}
-
-function normalizeHostname(input) {
-  try {
-    if (!input.startsWith("http://") && !input.startsWith("https://")) {
-      input = "https://" + input;
-    }
-
-    return new URL(input).hostname.replace(/^www\./, "").toLowerCase();
-  } catch {
-    return null;
-  }
-}
-
-async function isWhitelisted(hostname) {
-  const whitelist = await getWhitelist();
-  const cleanHost = hostname.replace(/^www\./, "").toLowerCase();
-
-  return whitelist.some((site) => {
-    return cleanHost === site || cleanHost.endsWith("." + site);
-  });
-}
-
-async function getBlacklist() {
-  const data = await chrome.storage.local.get("blacklist");
-  return data.blacklist || [];
-}
-
-async function isBlacklisted(hostname) {
-  const blacklist = await getBlacklist();
-  const cleanHost = hostname.replace(/^www\./, "").toLowerCase();
-
-  return blacklist.some((site) => {
-    return cleanHost === site || cleanHost.endsWith("." + site);
-  });
-}
-
-function isNotHTTPS(protocol) {
-
-  if(protocol !== "https:") {
-    return true;
-  } else return false;
-}
-
-function hasIPAddress(url) {
-
-    // IPv4 regex
-    const ipv4 =
-      /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
-
-    // IPv6 regex
-    const ipv6 =
-      /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|(([0-9a-fA-F]{1,4}:){1,7}:)|(([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4})|(([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2})|(([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3})|(([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4})|(([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5})|([0-9a-fA-F]{1,4}:)((:[0-9a-fA-F]{1,4}){1,6})|(:)((:[0-9a-fA-F]{1,4}){1,7}|:))$/;
-
-    // Checks if URL matches the IPv4 regex
-    if (url.match(ipv4)) {
-      return true;
-    }
-
-    // Checks if URL matches the IPv6 regex
-    if (url.match(ipv6)) {
-      return true;
-    }
-
-    return false;
-}
-
-function urlLength(url) {
-  return url.length > 75;
-}
-
-function multipleSubDomains(url) {
-  const parts = url.split(".");
-
-  // If the first part is "www", ignore both "www" and the TLD,
-  // Otherwise, ignore only the TLD (-1).
-  const subdomains =
-    parts[0].toLowerCase() === "www"
-      ? parts.length - 2
-      : parts.length - 1;
-
-  if (subdomains > 2) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function letterNumberSubstitution(url) {
-
-    // Remove dots (so subdomains don't interfere)
-    const compactURL = url.split(".");
-
-    for (let i = 0; i < compactURL.length; i++) {
-      if (!/[a-z]/.test(compactURL[i]) || !/\d/.test(compactURL[i])) {
-        continue;
-      }
-      else if (/[a-z]+\d+[a-z]+/.test(compactURL[i])) {
-        return true;
-      }
-    }
-
-    return false;
-
-}
-
-function suspiciousTLD(url) {
-    const tlds = [
-      "win",
-      "help",
-      "bond",
-      "cfd",
-      "finance",
-      "world",
-      "top",
-      "icu",
-      "support",
-      "vip",
-      "cyou",
-      "pro",
-      "sbs",
-      "monster",
-      "mom",
-      "click",
-      "quest",
-      "buzz",
-      "ink",
-      "fyi"
-    ];
-
-    const urlTLD = url.split(".").pop();
-
-    if (tlds.includes(urlTLD)) {
-      return true;
-    } else {
-      return false;
-    }
-
-}
-
-function tooManyHyphens(url) {
-
-    let hyphenCount = 0; 
-
-    for(let i = 0; i < url.length; i++) {
-      if (url[i] == "-") {
-        hyphenCount++;
-      }
-    }
-
-    if (hyphenCount >= 2) {
-      return true;
-    } else return false;
-}
-
-function tooManySlashes(url) {
-
-    let slashCount = 0; 
-
-    for(let i = 0; i < url.length; i++) {
-      if (url[i] == "/") {
-        slashCount++;
-      }
-    }
-
-    if (slashCount >= 5) {
-      return true;
-    } else return false;
-}
-
-function youngDomain(age) {
-  if (age < 6) {
-    return true;
-  } else return false;
-}
-
-function selfSignedCert(subject, issuer) {
-  if (JSON.stringify(subject) === JSON.stringify(issuer)) {
-    return true;
-  } else return false;
-}
-
-function registeredDomainMismatch(hostname, websiteData) {
-  const urlDomain = hostname.replace(/^www\./, "").toLowerCase();
-
-  const whoisName = websiteData?.name?.replace(/^www\./, "").toLowerCase();
-  const whoisIdnName = websiteData?.idnName?.replace(/^www\./, "").toLowerCase();
-
-  if (!whoisName && !whoisIdnName) {
-    return false;
-  }
-
-  const matchesWhoisName =
-    whoisName &&
-    (urlDomain === whoisName || urlDomain.endsWith("." + whoisName));
-
-  const matchesIdnName =
-    whoisIdnName &&
-    (urlDomain === whoisIdnName || urlDomain.endsWith("." + whoisIdnName));
-
-  return !matchesWhoisName && !matchesIdnName;
-}
-
-function atSign(url) {
-  if (url.includes("@")) {
-    return true;
-  } else return false;
 }
 
 
