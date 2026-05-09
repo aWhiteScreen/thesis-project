@@ -70,13 +70,36 @@ function appendHighlightedSlashPart(text) {
   }
 }
 
+function appendHighlightedAtPart(text) {
+  for (const char of text) {
+    if (char === "@") {
+      urlElement.appendChild(
+        createHighlight(
+          char,
+          "@ is typically not used in legitimate website URLs but is a common symbol used by phishers since it can imitate 'a' or redirect to another website."
+        )
+      );
+    } else {
+      urlElement.append(char);
+    }
+  }
+}
+
 function displayHighlightedUrl(originalUrl, phishingSigns) {
   urlElement.textContent = "";
 
   const parsedUrl = new URL(originalUrl);
 
   const protocol = parsedUrl.protocol;
-  const hostname = parsedUrl.hostname;
+  const authority =
+    (parsedUrl.username || parsedUrl.password
+      ? parsedUrl.username +
+        (parsedUrl.password ? ":" + parsedUrl.password : "") +
+        "@"
+      : "") +
+    parsedUrl.hostname;
+
+  const hostname = authority;
 
   const restOfUrl =
     (parsedUrl.port ? ":" + parsedUrl.port : "") +
@@ -124,6 +147,8 @@ function displayHighlightedUrl(originalUrl, phishingSigns) {
       );
     } else if (phishingSigns.includes("TOO_MANY_HYPHENS") && part.includes("-")) {
       appendHighlightedHyphenPart(part);
+    } else if (phishingSigns.includes("AT_SIGN") && part.includes("@")) {
+      appendHighlightedAtPart(part);
     } else {
       urlElement.append(part);
     }

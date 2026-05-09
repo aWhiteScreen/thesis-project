@@ -6,6 +6,8 @@ const warningPage = chrome.runtime.getURL("html/warningPage.html");
 
 const tabStates = new Map();
 
+const rawURLs = new Map();
+
 const SAFE_ICONS = {
   "16": "icons/safety16x16.png",
   "32": "icons/safety32x32.png",
@@ -236,6 +238,20 @@ function registeredDomainMismatch(hostname, websiteData) {
   return !matchesWhoisName && !matchesIdnName;
 }
 
+function atSign(url) {
+  if (url.includes("@")) {
+    return true;
+  } else return false;
+}
+
+
+chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+  if (details.frameId !== 0) return;
+  if (!details.url.startsWith("http://") && !details.url.startsWith("https://")) return;
+  if (!details.url.includes("@")) return;
+
+  rawURLs.set(details.tabId, details.url);
+});
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
@@ -252,6 +268,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.url.startsWith("chrome-extension://") || changeInfo.url.startsWith("chrome://extensions/") || changeInfo.url.startsWith("about:blank") || changeInfo.url.startsWith("chrome://newtab/")) return;
   
   let url = new URL(changeInfo.url);
+
+  const rawURL = rawURLs.get(tabId) || changeInfo.url;
 
   // Check if the URL is whitelisted
   if (await isWhitelisted(url.hostname)) {
@@ -364,6 +382,13 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     phishing = true;
   }
 
+  if (atSign(rawURL)) {
+    phishingSigns.add("AT_SIGN");
+    phishing = true;
+  }
+
+  console.log("URL", url);
+
   // If phishing is detected, redirect to the warning page
   if (phishing) {
     setTabState(tabId, true, Array.from(phishingSigns));
@@ -372,7 +397,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     const warningUrl =
       warningPage +
       "?url=" +
-      encodeURIComponent(url.href) +
+      encodeURIComponent(rawURL) +
       "&signs=" +
       encodeURIComponent(JSON.stringify(Array.from(phishingSigns)));
 
