@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Add-on name",
+  "name": "PigeonGuard",
   "version": "1.0",
   "description": "Detects phishing signs in URLs",
   "permissions": ["tabs", "scripting", "storage", "webNavigation"],

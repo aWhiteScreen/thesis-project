@@ -40,12 +40,15 @@ const WARNING_ICONS = {
   "128": "icons/warning128x128.png"
 };
 
-var oldURL = '';
+const allowedHosts = new Map();
 
-function setTabState(tabId, phishing, signs = []) {
-  tabStates.set(tabId, {
-    phishing,
-    signs
+async function setTabState(tabId, phishing, signs = []) {
+  const state = { phishing, signs };
+
+  tabStates.set(tabId, state);
+
+  await chrome.storage.session.set({
+    ["tabState_" + tabId]: state
   });
 
   chrome.action.setIcon({
@@ -53,7 +56,6 @@ function setTabState(tabId, phishing, signs = []) {
     path: phishing ? WARNING_ICONS : SAFE_ICONS
   });
 }
-
 
 chrome.webNavigation.onBeforeNavigate.addListener((details) => {
   if (details.frameId !== 0) return;
@@ -74,8 +76,21 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   // Only check when loading a new URL
   if (!changeInfo.url) return;
 
+  if (changeInfo.url.startsWith(warningPage)) {
+  const warningUrl = new URL(changeInfo.url);
+  const signs = JSON.parse(warningUrl.searchParams.get("signs") || "[]");
+
+  setTabState(tabId, true, signs);
+  return;
+  }
+
+  if (changeInfo.url.startsWith("about:blank")) {
+  setTabState(tabId, false, []);
+  return;
+  }
+
   // Checks if the URL is the extension itself or a new page, which should be ignored
-  if (changeInfo.url.startsWith("chrome-extension://") || changeInfo.url.startsWith("chrome://extensions/") || changeInfo.url.startsWith("about:blank") || changeInfo.url.startsWith("chrome://newtab/")) return;
+  if (changeInfo.url.startsWith("chrome-extension://") || changeInfo.url.startsWith("chrome://extensions/") || changeInfo.url.startsWith("chrome://newtab/")) return;
   
   let url = new URL(changeInfo.url);
 
@@ -92,7 +107,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 
   // If user decided to proceed to the phishing website, do not check for phishing again, also keeps the warning symbol
-  if (url.hostname == oldURL) {
+  if (allowedHosts.get(tabId) === url.hostname) {
     setTabState(tabId, true, Array.from(phishingSigns));
     return;
   }
@@ -221,18 +236,29 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
 // Listener for checking if user proceeded to the phishing website anyway
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+
   if (message.type === "ALLOW_URL") {
-    oldURL = message.url;
+    allowedHosts.set(sender.tab.id, message.url);
     sendResponse({ ok: true });
   }
 
   if (message.type === "GET_TAB_STATE") {
-    const state = tabStates.get(message.tabId) || {
-      phishing: false,
-      signs: []
-    };
+    const memoryState = tabStates.get(message.tabId);
 
-    sendResponse(state);
+    if (memoryState) {
+      sendResponse(memoryState);
+      return true;
+    }
+
+    chrome.storage.session.get("tabState_" + message.tabId).then((data) => {
+      sendResponse(
+        data["tabState_" + message.tabId] || {
+          phishing: false,
+          signs: []
+        }
+      );
+    });
+
     return true;
   }
 
@@ -332,4 +358,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 chrome.tabs.onRemoved.addListener((tabId) => {
   tabStates.delete(tabId);
+  rawURLs.delete(tabId);
+  allowedHosts.delete(tabId);
+  chrome.storage.session.remove("tabState_" + tabId);
 });
