@@ -169,7 +169,10 @@ function displayHighlightedUrl(originalUrl, phishingSigns) {
 
 displayHighlightedUrl(originalUrl, phishingSigns);
 
+const otherPhishingSigns = document.getElementById("otherPhishingSigns");
 const signsList = document.getElementById("signs");
+
+let otherPhishingSignsPresent = false;
 
 const phishingSignMessages = {
   SELF_SIGNED_SSL:
@@ -195,6 +198,8 @@ phishingSigns.forEach(sign => {
     return;
   }
 
+  otherPhishingSignsPresent = true;
+
   const box = document.createElement("div");
   box.className = "phishing-sign-box";
   box.textContent = message;
@@ -202,6 +207,7 @@ phishingSigns.forEach(sign => {
   signsList.appendChild(box);
 });
 
+otherPhishingSigns.style.display = otherPhishingSignsPresent ? "block" : "none";
 
 document.getElementById("backButton").addEventListener("click", () => {
   window.location.href = "about:blank";

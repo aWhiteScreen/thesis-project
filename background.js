@@ -57,6 +57,7 @@ async function setTabState(tabId, phishing, signs = []) {
   });
 }
 
+// Retains the entire URL if @ is used
 chrome.webNavigation.onBeforeNavigate.addListener((details) => {
   if (details.frameId !== 0) return;
   if (!details.url.startsWith("http://") && !details.url.startsWith("https://")) return;
@@ -234,7 +235,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 });
 
 
-// Listener for checking if user proceeded to the phishing website anyway
+// Listener for checking for certain actions
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.type === "ALLOW_URL") {
@@ -356,6 +357,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 });
 
+
+// Removes tab state once the tab is closed
 chrome.tabs.onRemoved.addListener((tabId) => {
   tabStates.delete(tabId);
   rawURLs.delete(tabId);
