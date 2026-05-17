@@ -125,39 +125,38 @@ function displayHighlightedUrl(originalUrl, phishingSigns) {
     urlElement.append("//");
   }
 
-  const hostnameParts = hostname.split(".");
+  if (phishingSigns.includes("SHORTENED_URL")) {
+    urlElement.appendChild(
+      createHighlight(
+        parsedUrl.hostname, "URL shorteners such as TinyURL and Bitly can be used by phishers to redirect you to a unknown phishing link that is unseen to you."
+      )
+    );
+  } else {
 
-  hostnameParts.forEach((part, index) => {
-    const isLastPart = index === hostnameParts.length - 1;
+    const hostnameParts = hostname.split(".");
 
-    if (
-      phishingSigns.includes("LETTER_SUBSTITUTION_WITH_NUMBERS") &&
-      isLetterNumberSubstitution(part)
-    ) {
-      appendHighlightedSubstitutionPart(part);
-    } else if (
-      phishingSigns.includes("SUSPICIOUS_TLD") &&
-      isLastPart
-    ) {
-      urlElement.appendChild(
-        createHighlight(
-          part,
-          "Atypical top level domains are often used in phishing websites as they are free and easy to acquire."
-        )
-      );
-    } else if (phishingSigns.includes("TOO_MANY_HYPHENS") && part.includes("-")) {
-      appendHighlightedHyphenPart(part);
-    } else if (phishingSigns.includes("AT_SIGN") && part.includes("@")) {
-      appendHighlightedAtPart(part);
-    } else {
-      urlElement.append(part);
-    }
+    hostnameParts.forEach((part, index) => {
+      const isLastPart = index === hostnameParts.length - 1;
 
-    if (!isLastPart) {
-      urlElement.append(".");
-    }
-  });
+      if (phishingSigns.includes("LETTER_SUBSTITUTION_WITH_NUMBERS") && isLetterNumberSubstitution(part)) {
+        appendHighlightedSubstitutionPart(part);
+      } else if (phishingSigns.includes("SUSPICIOUS_TLD") && isLastPart) {
+        urlElement.appendChild(createHighlight(part,"Atypical top level domains are often used in phishing websites as they are free and easy to acquire."));
+      } else if (phishingSigns.includes("TOO_MANY_HYPHENS") && part.includes("-")) {
+        appendHighlightedHyphenPart(part);
+      } else if (phishingSigns.includes("AT_SIGN") && part.includes("@")) {
+        appendHighlightedAtPart(part);
+      } else {
+        urlElement.append(part);
+      }
 
+      if (!isLastPart) {
+        urlElement.append(".");
+      }
+    });
+
+  }
+  
   if (restOfUrl) {
     if (phishingSigns.includes("TOO_MANY_SLASHES")) {
       appendHighlightedSlashPart(restOfUrl);
@@ -188,7 +187,9 @@ const phishingSignMessages = {
   YOUNG_DOMAIN:
     "This domain is younger than 6 months which indicates an increased chance of phishing. Legitimate domains tend to be older.",
   DOMAIN_MISMATCH:
-    "The registered domain and the domain provided in the URL do not match. This indicates an increased chance of phishing since the URL may be attempting to imitate another brand."
+    "The registered domain and the domain provided in the URL do not match. This indicates an increased chance of phishing since the URL may be attempting to imitate another brand.",
+  MULTIPLE_SUBDOMAINS:
+    "This URL contains 2 or more subdomains which is a tactic often used by phishers to create more legitimate looking URLs by adding keywords such as 'support', 'account' next to a legitimate sounding name."
 };
 
 phishingSigns.forEach(sign => {

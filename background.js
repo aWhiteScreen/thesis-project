@@ -16,13 +16,12 @@ import { atSign } from "./phishingDetection/atSign.js";
 import { getBlacklist, isBlacklisted } from "./phishingDetection/userBlacklist.js";
 import { getWhitelist, isWhitelisted } from "./phishingDetection/userWhitelist.js";
 import { normalizeHostname } from "./util/normalizeHostname.js";
+import { shortenedURL} from "./phishingDetection/shortenedURL.js";
 
 
 const warningPage = chrome.runtime.getURL("html/warningPage.html");
 
 const tabStates = new Map();
-
-const rawURLs = new Map();
 
 const SAFE_ICONS = {
   "16": "icons/safety16x16.png",
@@ -40,6 +39,7 @@ const WARNING_ICONS = {
   "128": "icons/warning128x128.png"
 };
 
+// Meant for URLs where the warning was ignored 
 const allowedHosts = new Map();
 
 async function setTabState(tabId, phishing, signs = []) {
@@ -61,9 +61,39 @@ async function setTabState(tabId, phishing, signs = []) {
 chrome.webNavigation.onBeforeNavigate.addListener((details) => {
   if (details.frameId !== 0) return;
   if (!details.url.startsWith("http://") && !details.url.startsWith("https://")) return;
-  if (!details.url.includes("@")) return;
 
-  rawURLs.set(details.tabId, details.url);
+  // Check if @ sign is used to try and redirect to another link
+  if (atSign(details.url)) {
+    setTabState(details.tabId, true, []);
+
+    const warningUrl =
+      warningPage +
+      "?url=" +
+      encodeURIComponent(details.url) +
+      "&signs=" +
+      encodeURIComponent(JSON.stringify(["AT_SIGN"]));
+    chrome.tabs.update(details.tabId, { url: warningUrl });
+    
+    return;
+
+  }
+
+  // Check if shorteners are used to redirect to another link
+  let beforeNavURL = new URL(details.url);
+  if (shortenedURL(beforeNavURL.hostname)) {
+    setTabState(details.tabId, true, []);
+
+    const warningUrl =
+      warningPage +
+      "?url=" +
+      encodeURIComponent(details.url) +
+      "&signs=" +
+      encodeURIComponent(JSON.stringify(["SHORTENED_URL"]));
+    chrome.tabs.update(details.tabId, { url: warningUrl });
+
+    return;
+  }
+
 });
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
@@ -77,25 +107,26 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   // Only check when loading a new URL
   if (!changeInfo.url) return;
 
-  if (changeInfo.url.startsWith(warningPage)) {
-  const warningUrl = new URL(changeInfo.url);
-  const signs = JSON.parse(warningUrl.searchParams.get("signs") || "[]");
 
-  setTabState(tabId, true, signs);
-  return;
+  // If users goes back to the warning page after proceeding to the phishing website
+  if (changeInfo.url.startsWith(warningPage)) {
+    const warningUrl = new URL(changeInfo.url);
+    const signs = JSON.parse(warningUrl.searchParams.get("signs") || "[]");
+
+    setTabState(tabId, true, signs);
+    return;
   }
 
+  // Security state should change to safe in an empty tab
   if (changeInfo.url.startsWith("about:blank")) {
-  setTabState(tabId, false, []);
-  return;
+    setTabState(tabId, false, []);
+    return;
   }
 
   // Checks if the URL is the extension itself or a new page, which should be ignored
   if (changeInfo.url.startsWith("chrome-extension://") || changeInfo.url.startsWith("chrome://extensions/") || changeInfo.url.startsWith("chrome://newtab/")) return;
   
   let url = new URL(changeInfo.url);
-
-  const rawURL = rawURLs.get(tabId) || changeInfo.url;
 
   // Check if the URL is whitelisted
   if (await isWhitelisted(url.hostname)) {
@@ -120,7 +151,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 
   let googleData = await checkGoogleSafeBrowsing(url.href);
-  console.log("google data", googleData);
 
   // Checks if the URL is blacklisted by Google's safe browsing API
   if (await checkGoogleSafeBrowsing(url.href)) {
@@ -135,44 +165,32 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 
   // Checks if the URL uses an IP address instead of a domain name, which is a common sign of phishing
-  if (hasIPAddress(url.host)) {
+  if (hasIPAddress(url.hostname)) {
     phishingSigns.add("IP_ADDRESS");
     phishing = true;
   }
 
-  // Checks if the URL is excessively long, which can be a sign of phishing
-  if (urlLength(url.href)) {
-    phishingSigns.add("LONG_URL");
-    phishing = true;
-  }
-
   // Checks if the URL has multiple subdomains, which can be a sign of phishing
-  if (multipleSubDomains(url.host)) {
+  if (multipleSubDomains(url.hostname)) {
     phishingSigns.add("MULTIPLE_SUBDOMAINS");
     phishing = true;
   }
 
   // Checks for some common letter-number substitutions, which can be a sign of phishing
-  if (letterNumberSubstitution(url.host)) {
+  if (letterNumberSubstitution(url.hostname)) {
     phishingSigns.add("LETTER_SUBSTITUTION_WITH_NUMBERS");
     phishing = true;
   }
 
   // Checks if the URL has a suspicious top-level domain, which can be a sign of phishing
-  if (suspiciousTLD(url.host)) {
+  if (suspiciousTLD(url.hostname)) {
     phishingSigns.add("SUSPICIOUS_TLD");
     phishing = true;
   }
 
   // Check if the URL has more hyphens than is expected, since it can be a sign of phishing
-  if (tooManyHyphens(url.host)) {
+  if (tooManyHyphens(url.hostname)) {
     phishingSigns.add("TOO_MANY_HYPHENS");
-    phishing = true;
-  }
-
-  // Check if the URL has more hyphens than is expected, since it can be a sign of phishing
-  if (tooManySlashes(url.href)) {
-    phishingSigns.add("TOO_MANY_SLASHES");
     phishing = true;
   }
 
@@ -208,22 +226,32 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     phishing = true;
   }
 
-  if (atSign(rawURL)) {
-    phishingSigns.add("AT_SIGN");
+  // If hostname is fine then the length or slashes probably don't matter
+  if(!phishing) {
+    return;
+  }
+
+  // Check if the URL has more hyphens than is expected, since it can be a sign of phishing
+  if (tooManySlashes(url.href)) {
+    phishingSigns.add("TOO_MANY_SLASHES");
     phishing = true;
   }
 
-  console.log("URL", url);
+  // Checks if the URL is excessively long, which can be a sign of phishing
+  if (urlLength(url.href)) {
+    phishingSigns.add("LONG_URL");
+    phishing = true;
+  }
 
+  console.log(phishingSigns);
   // If phishing is detected, redirect to the warning page
   if (phishing) {
     setTabState(tabId, true, Array.from(phishingSigns));
 
-
     const warningUrl =
       warningPage +
       "?url=" +
-      encodeURIComponent(rawURL) +
+      encodeURIComponent(url) +
       "&signs=" +
       encodeURIComponent(JSON.stringify(Array.from(phishingSigns)));
 
@@ -233,7 +261,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 
 });
-
 
 // Listener for checking for certain actions
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -357,11 +384,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 });
 
-
 // Removes tab state once the tab is closed
 chrome.tabs.onRemoved.addListener((tabId) => {
   tabStates.delete(tabId);
-  rawURLs.delete(tabId);
   allowedHosts.delete(tabId);
   chrome.storage.session.remove("tabState_" + tabId);
 });
