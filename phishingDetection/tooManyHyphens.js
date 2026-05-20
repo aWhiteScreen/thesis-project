@@ -1,4 +1,4 @@
-export function tooManyHyphens(url) {
+export async function tooManyHyphens(url) {
 
     let hyphenCount = 0; 
 

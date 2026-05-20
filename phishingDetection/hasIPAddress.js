@@ -1,4 +1,4 @@
-export function hasIPAddress(url) {
+export async function hasIPAddress(url) {
 
     // IPv4 regex
     const ipv4 =

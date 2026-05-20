@@ -44,7 +44,9 @@ const WARNING_ICONS = {
 const allowedHosts = new Map();
 
 async function setTabState(tabId, phishing) {
-  tabStates.set(tabId, phishing);
+  const state = { phishing };
+
+  tabStates.set(tabId, state);
 
   await chrome.storage.session.set({
     ["tabState_" + tabId]: phishing
@@ -57,12 +59,19 @@ async function setTabState(tabId, phishing) {
 }
 
 // Retains the entire URL if @ is used
-chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
   if (details.frameId !== 0) return;
   if (!details.url.startsWith("http://") && !details.url.startsWith("https://")) return;
 
+  let beforeNavURL = new URL(details.url);
+
+  // Check if user decided to proceed forward
+  if (allowedHosts.get(details.tabId) === beforeNavURL.hostname) {
+    return;
+  }
+
   // Check if @ sign is used to try and redirect to another link
-  if (atSign(details.url)) {
+  if (await atSign(details.url)) {
     setTabState(details.tabId, true);
 
     const warningUrl =
@@ -78,8 +87,7 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
   }
 
   // Check if shorteners are used to redirect to another link
-  let beforeNavURL = new URL(details.url);
-  if (shortenedURL(beforeNavURL.hostname)) {
+  if (await shortenedURL(beforeNavURL.hostname)) {
     setTabState(details.tabId, true);
 
     const warningUrl =
@@ -153,43 +161,43 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   //let googleData = await checkGoogleSafeBrowsing(url.href);
 
   // Checks if the URL is blacklisted by Google's safe browsing API
-  if (await checkGoogleSafeBrowsing(url.href)) {
+  if (googleData) {
     phishingSigns.add("BLACKLISTED_BY_GOOGLE");
     phishing = true;
   }
 
   // Checks if the URL is not HTTPS, which is a common sign of phishing
-  if (isNotHTTPS(url.protocol)) {
+  if (await isNotHTTPS(url.protocol)) {
     phishingSigns.add("NOT_HTTPS");
     phishing = true;
   }
 
   // Checks if the URL uses an IP address instead of a domain name, which is a common sign of phishing
-  if (hasIPAddress(url.hostname)) {
+  if (await hasIPAddress(url.hostname)) {
     phishingSigns.add("IP_ADDRESS");
     phishing = true;
   }
 
   // Checks if the URL has multiple subdomains, which can be a sign of phishing
-  if (multipleSubDomains(url.hostname)) {
+  if (await multipleSubDomains(url.hostname)) {
     phishingSigns.add("MULTIPLE_SUBDOMAINS");
     phishing = true;
   }
 
   // Checks for some common letter-number substitutions, which can be a sign of phishing
-  if (letterNumberSubstitution(url.hostname)) {
+  if (await letterNumberSubstitution(url.hostname)) {
     phishingSigns.add("LETTER_SUBSTITUTION_WITH_NUMBERS");
     phishing = true;
   }
 
   // Checks if the URL has a suspicious top-level domain, which can be a sign of phishing
-  if (suspiciousTLD(url.hostname)) {
+  if (await suspiciousTLD(url.hostname)) {
     phishingSigns.add("SUSPICIOUS_TLD");
     phishing = true;
   }
 
   // Check if the URL has more hyphens than is expected, since it can be a sign of phishing
-  if (tooManyHyphens(url.hostname)) {
+  if (await tooManyHyphens(url.hostname)) {
     phishingSigns.add("TOO_MANY_HYPHENS");
     phishing = true;
   } 
@@ -204,7 +212,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
   // Checks if the domain is younger than 6 months, which can be a sign of phishing
   if (websiteData?.age?.months !== undefined) {
-    if (youngDomain(websiteData.age.months)) {
+    if (await youngDomain(websiteData.age.months)) {
       phishingSigns.add("YOUNG_DOMAIN");
       phishing = true;
     }
@@ -214,19 +222,21 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
  
   // Check is the TLS/SSL certificate is self-signed, which can be a sign of phishing
   if (sslData?.details?.subject && sslData?.issuer) {
-    if (selfSignedCert(sslData.details.subject, sslData.issuer)) {
+    if (await selfSignedCert(sslData.details.subject, sslData.issuer)) {
       phishingSigns.add("SELF_SIGNED_SSL");
       phishing = true;
     }
   }
 
   // Checks if URL domain does not match with the registered domain, which can be a sign of phishing
-  if (registeredDomainMismatch(url.hostname, websiteData)) {
+  if (await registeredDomainMismatch(url.hostname, websiteData)) {
     phishingSigns.add("DOMAIN_MISMATCH");
     phishing = true;
   }
 
-  if (brandAsSubdomain(url.hostname)) {
+
+  // Checks if a common brand is being used as something other than the main domain part
+  if (await brandAsSubdomain(url.hostname)) {
     phishingSigns.add("PLAGIARIZED_BRAND");
     phishing = true;
   }
@@ -237,18 +247,17 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 
   // Check if the URL has more hyphens than is expected, since it can be a sign of phishing
-  if (tooManySlashes(url.href)) {
+  if (await tooManySlashes(url.href)) {
     phishingSigns.add("TOO_MANY_SLASHES");
     phishing = true;
   }
 
   // Checks if the URL is excessively long, which can be a sign of phishing
-  if (urlLength(url.href)) {
+  if (await urlLength(url.href)) {
     phishingSigns.add("LONG_URL");
     phishing = true;
   }
 
-  console.log("phishing signs", phishingSigns);
   // If phishing is detected, redirect to the warning page
   if (phishing) {
     setTabState(tabId, true);
@@ -256,7 +265,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     const warningUrl =
       warningPage +
       "?url=" +
-      encodeURIComponent(url) +
+      encodeURIComponent(url.href) +
       "&signs=" +
       encodeURIComponent(JSON.stringify(Array.from(phishingSigns)));
 

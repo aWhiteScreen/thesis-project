@@ -4,7 +4,7 @@ export const shorteners = [
     "ow.ly"
 ]
 
-export function shortenedURL(url) {
+export async function shortenedURL(url) {
 
     if (shorteners.includes(url)) {
         return true;

@@ -1,4 +1,4 @@
-export function youngDomain(age) {
+export async function youngDomain(age) {
   if (age < 6) {
     return true;
   } else return false;

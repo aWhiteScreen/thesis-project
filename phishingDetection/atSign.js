@@ -1,4 +1,4 @@
-export function atSign(url) {
+export async function atSign(url) {
   if (url.includes("@")) {
     return true;
   } else return false;

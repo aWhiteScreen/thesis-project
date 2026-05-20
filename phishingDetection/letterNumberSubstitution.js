@@ -1,4 +1,4 @@
-export function letterNumberSubstitution(url) {
+export async function letterNumberSubstitution(url) {
 
     // Remove dots (so subdomains don't interfere)
   const compactURL = url.toLowerCase().split(/[.-]/);

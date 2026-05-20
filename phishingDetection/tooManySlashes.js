@@ -1,4 +1,4 @@
-export function tooManySlashes(url) {
+export async function tooManySlashes(url) {
 
     let slashCount = 0; 
 

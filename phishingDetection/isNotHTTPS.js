@@ -1,4 +1,4 @@
-export function isNotHTTPS(protocol) {
+export async function isNotHTTPS(protocol) {
 
   if(protocol !== "https:") {
     return true;

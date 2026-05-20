@@ -1,7 +1,7 @@
-export function multipleSubDomains(url) {
+export async function multipleSubDomains(url) {
   const parts = url.split(".");
 
-  // If the first part is "www", ignore both "www" and the TLD,
+  // If the first part is "www", ignore both "www" and the TLD (-2),
   // Otherwise, ignore only the TLD (-1).
   const subdomains =
     parts[0].toLowerCase() === "www"

@@ -164,7 +164,14 @@ function displayHighlightedUrl(originalUrl, phishingSigns) {
     urlElement.appendChild(
       createHighlight(
         parsedUrl.hostname,
-        "URL shorteners such as TinyURL and Bitly can be used by phishers to redirect you to an unknown phishing link that is unseen to you."
+        "URL shorteners such as TinyURL and Bitly can be used by phishers to redirect the user to an unknown phishing link that is unseen to them."
+      )
+    );
+  } else if (phishingSigns.includes("IP_ADDRESS")) {
+    urlElement.appendChild(
+      createHighlight(
+        parsedUrl.hostname,
+        "Sometimes phishers use IP addresses instead of regular domains to hide the inteneded destination of the URL from the user."
       )
     );
   } else {

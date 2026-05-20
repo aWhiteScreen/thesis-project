@@ -1,4 +1,4 @@
-export function registeredDomainMismatch(hostname, websiteData) {
+export async function registeredDomainMismatch(hostname, websiteData) {
   const urlDomain = hostname.replace(/^www\./, "").toLowerCase();
 
   const whoisName = websiteData?.name?.replace(/^www\./, "").toLowerCase();

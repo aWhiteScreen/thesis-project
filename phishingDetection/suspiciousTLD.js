@@ -1,4 +1,4 @@
-export function suspiciousTLD(url) {
+export async function suspiciousTLD(url) {
     const tlds = [
       "win",
       "help",

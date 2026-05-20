@@ -1,3 +1,3 @@
-export function urlLength(url) {
+export async function urlLength(url) {
   return url.length > 75;
 }

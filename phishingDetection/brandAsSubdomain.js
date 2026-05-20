@@ -3,10 +3,11 @@ export const commonBrands = [
     "facebook",
     "netflix",
     "instagram",
-    "roblox"
+    "roblox",
+    "t-mobile"
 ]
 
-export function brandAsSubdomain (url) {
+export async function brandAsSubdomain (url) {
     let subdomains = url.split(".");
 
     for (let i = 0; i < subdomains.length - 2; i++) {
