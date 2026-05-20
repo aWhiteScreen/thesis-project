@@ -51,7 +51,7 @@ function appendHighlightedHostnamePart(part, isLastPart, phishingSigns) {
     urlElement.appendChild(
       createHighlight(
         part,
-        "Atypical top level domains are often used in phishing websites as they are free and easy to acquire."
+        "Atypical top level domains, such .top, .cfd and so on, are often used in phishing websites as they are free and easy to make use of for phishers."
       )
     );
     return;
@@ -67,7 +67,7 @@ function appendHighlightedHostnamePart(part, isLastPart, phishingSigns) {
         urlElement.appendChild(
           createHighlight(
             part.slice(i, i + brand.length),
-            "A common brand being used as anything other than as the main domain part is a common phishing tactic to create a URL that looks similar to its legitimate counterpart."
+            "A common brand being used as anything other than as the main domain is a common phishing tactic to create a URL that looks similar to its legitimate counterpart."
           )
         );
 
@@ -80,7 +80,7 @@ function appendHighlightedHostnamePart(part, isLastPart, phishingSigns) {
       urlElement.appendChild(
         createHighlight(
           part[i],
-          "@ is typically not used in legitimate website URLs but is a common symbol used by phishers since it can imitate 'a' or redirect to another website."
+          "@ is typically not used in legitimate website URLs but it can be sometimes used by phishers to redirect the user to suspicious URL (the user is taken to the URL after the @ sign, everything before it is ignored)."
         )
       );
 
@@ -92,7 +92,7 @@ function appendHighlightedHostnamePart(part, isLastPart, phishingSigns) {
       urlElement.appendChild(
         createHighlight(
           part[i],
-          "Legitimate websites typically do not use more than 1 hyphen. 2 or more hyphens suggest an increased chance of phishing."
+          "Legitimate websites typically do not use more than 1 hyphen. 2 or more hyphens suggest an increased chance of phishing, since they can used to include a plagiarised brand name together with other words in the domain."
         )
       );
 
@@ -108,7 +108,7 @@ function appendHighlightedHostnamePart(part, isLastPart, phishingSigns) {
       urlElement.appendChild(
         createHighlight(
           part[i],
-          "Numbers can be used in phishing URLs to substitute letters with familiar looking numbers to try and trick the user into believing it is a legitimate URL."
+          "Numbers can be used in phishing URLs to substitute letters with familiar looking numbers to try and trick the user into believing it is a legitimate URL. They can also be used to extend the length of the URL and obfuscate suspicious parts from the user."
         )
       );
 
@@ -146,7 +146,7 @@ function displayHighlightedUrl(originalUrl, phishingSigns) {
     urlElement.appendChild(
       createHighlight(
         "http",
-        "HTTP being used instead of HTTPS is a common sign of phishing."
+        "HTTP being used instead of HTTPS is a common sign of phishing, since it is easier to view data (such as passwords, credit card numbers and so on) sent between the user and the website."
       )
     );
     urlElement.append(":");
@@ -164,7 +164,7 @@ function displayHighlightedUrl(originalUrl, phishingSigns) {
     urlElement.appendChild(
       createHighlight(
         parsedUrl.hostname,
-        "URL shorteners such as TinyURL and Bitly can be used by phishers to redirect the user to an unknown phishing link that is unseen to them."
+        "URL shorteners such as TinyURL and Bitly can be used by phishers to redirect the user to an unknown link that is unseen to the user."
       )
     );
   } else if (phishingSigns.includes("IP_ADDRESS")) {
@@ -206,21 +206,21 @@ let otherPhishingSignsPresent = false;
 
 const phishingSignMessages = {
   SELF_SIGNED_SSL:
-    "The SSL/TLS certificate is self-signed rather than signed by a recognized Certificate Authority which indicates an increased chance of phishing.",
+    "The SSL/TLS certificate is self-signed rather than signed by a recognized Certificate Authority which indicates an increased chance of phishing, since phishers can use it to create the appearance of a safe website.",
   LONG_URL:
     "The URL matches or exceeds the length of a typical phishing URL. Long URLs may used to obfuscate suspicious elements from the user.",
   NO_RECORD:
-    "This URL has no WHOIS record associated with it which indicates an increased chance of phishing since phishing websites have short lifespans and do not always get logged.",
+    "This URL has no WHOIS record associated with it which indicates an increased chance of phishing since phishing websites have short lifespans and do not always get logged by WHOIS.",
   BLACKLISTED_BY_USER:
     "This URL was blacklisted by the user for, potentially, being a phishing URL.",
   BLACKLISTED_BY_GOOGLE:
-    "The URL has been blacklisted by Google as a harmful website that may include phishing.",
+    "The URL has been blacklisted by Google as a harmful website that may include phishing attacks.",
   YOUNG_DOMAIN:
-    "This domain is younger than 6 months which indicates an increased chance of phishing. Legitimate domains tend to be older.",
+    "This domain is younger than 6 months which indicates an increased chance of phishing. Legitimate domains tend to be older than that unlike phishing URLs which have short lifespans.",
   DOMAIN_MISMATCH:
     "The registered domain and the domain provided in the URL do not match. This indicates an increased chance of phishing since the URL may be attempting to imitate another brand.",
   MULTIPLE_SUBDOMAINS:
-    "This URL contains 2 or more subdomains which is a tactic often used by phishers to create more legitimate looking URLs by adding keywords such as 'support', 'account' next to a legitimate sounding name."
+    "This URL contains 2 or more subdomains which is a tactic often used by phishers to create more legitimate looking URLs by adding keywords such as 'support', 'account' next to a legitimate brand name."
 };
 
 phishingSigns.forEach((sign) => {

@@ -4,7 +4,8 @@ export const commonBrands = [
     "netflix",
     "instagram",
     "roblox",
-    "t-mobile"
+    "t-mobile",
+    "paypal"
 ]
 
 export async function brandAsSubdomain (url) {

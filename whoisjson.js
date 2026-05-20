@@ -6,7 +6,7 @@ export async function checkWhois(domain) {
       {
         method: "GET",
         headers: {
-          Authorization: "Token=869ac83fe2eb4694780e5d0f214981500a476504e20029c25078ed31602de322"
+          Authorization: "Token=47dace066e2ac243fd07c208c3d25c9311f2a74fe01f3fcd31c35fd03bf9840c"
         }
       }
     );
@@ -33,7 +33,7 @@ export async function checkSSL(domain) {
       {
         method: "GET",
         headers: {
-          Authorization: "Token=869ac83fe2eb4694780e5d0f214981500a476504e20029c25078ed31602de322"
+          Authorization: "Token=47dace066e2ac243fd07c208c3d25c9311f2a74fe01f3fcd31c35fd03bf9840c"
         }
       }
     );
