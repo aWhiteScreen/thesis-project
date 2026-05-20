@@ -1,6 +1,6 @@
 # PigeonGuard
 
-## Description:
+### Description:
 
 PigeonGuard is an extension for Google Chrome that can detect signs of phishing in the URL of a website. It was made as a project for a bachelor's final thesis on "Users' protection from phishing attacks.".
 
