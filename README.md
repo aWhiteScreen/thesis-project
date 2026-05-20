@@ -6,11 +6,11 @@ PigeonGuard is an extension for Google Chrome that can detect signs of phishing 
 
 ### How to use:
 
-1) Download the add-on from here.
-2) Extract the add-on at a convenient place.
-3) On Chrome, enter chrome://extensions/ or click on the add-on icon and click "Manage extensions".
+1) Download the extension from here.
+2) Extract the extension at a convenient place.
+3) On Chrome, enter chrome://extensions/ or click on the extension icon and click "Manage extensions".
 4) In the upper-right corner make sure developer mode is turned on.
-5) Click on "Load unpacked" and select the folder with the extracted add-on.
+5) Click on "Load unpacked" and select the folder with the extracted extension.
 
 ### Example websites:
 
