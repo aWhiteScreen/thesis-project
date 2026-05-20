@@ -49,7 +49,7 @@ async function setTabState(tabId, phishing) {
   tabStates.set(tabId, state);
 
   await chrome.storage.session.set({
-    ["tabState_" + tabId]: phishing
+    ["tabState_" + tabId]: { phishing }
   });
 
   chrome.action.setIcon({
@@ -158,7 +158,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
 
   const [googleData, websiteData, sslData] = await Promise.all([checkGoogleSafeBrowsing(url.href), checkWhois(url.hostname), checkSSL(url.hostname)]);
-  //let googleData = await checkGoogleSafeBrowsing(url.href);
 
   // Checks if the URL is blacklisted by Google's safe browsing API
   if (googleData) {
@@ -202,8 +201,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     phishing = true;
   } 
 
-  //const websiteData = await checkWhois(url.hostname);
-
   // Check if domain has no WHOIS record, which can be a sign of phishing
   if(!websiteData) {
     phishingSigns.add("NO_RECORD");
@@ -217,8 +214,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       phishing = true;
     }
   }
-
-  //const sslData = await checkSSL(url.hostname);
  
   // Check is the TLS/SSL certificate is self-signed, which can be a sign of phishing
   if (sslData?.details?.subject && sslData?.issuer) {
@@ -243,6 +238,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
   // If hostname is fine then the length or slashes probably don't matter
   if(!phishing) {
+    setTabState(tabId, false);
     return;
   }
 

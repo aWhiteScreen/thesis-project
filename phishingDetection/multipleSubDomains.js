@@ -8,7 +8,7 @@ export async function multipleSubDomains(url) {
       ? parts.length - 2
       : parts.length - 1;
 
-  console.log("subdomains ", subdomains);
+
   if (subdomains > 2) {
     return true;
   } else {
